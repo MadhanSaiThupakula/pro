@@ -1,0 +1,145 @@
+import numpy as np
+import pandas as pd
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+import tkinter as tk
+
+class Predictor:
+    def __init__(self):
+        self.model_trained = False
+        self.standardScaler = StandardScaler()
+        self.knn_classifier = KNeighborsClassifier(n_neighbors=8)
+
+    def train(self):
+        if not self.model_trained:
+            df = pd.read_csv('heart diseases.csv')
+            dataset = df
+            columns_to_scale = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak',
+                                'slope', 'ca', 'thal']
+            dataset[columns_to_scale] = self.standardScaler.fit_transform(dataset[columns_to_scale])
+            y = dataset['target']
+            X = dataset.drop(['target'], axis=1)
+            X_train, _, y_train, _ = train_test_split(X, y, test_size=0.33, random_state=0)
+            self.knn_classifier.fit(X_train, y_train)
+            self.model_trained = True
+            score = self.knn_classifier.score(X_train, y_train)
+            print('--Training Complete--')
+            print('Score:', score)
+
+    def predict(self, row):
+        self.train()
+        user_df = np.array(row).reshape(1, 13)
+        user_df = self.standardScaler.transform(user_df)
+        predicted = self.knn_classifier.predict(user_df)
+        print("Predicted:", predicted[0])
+        return predicted[0]
+
+def onClick():
+    row=[[age.get(), gender.get(), cp.get(), tbps.get(), chol.get(), fbs.get(), restecg.get(), thalach.get(), exang.get(), oldpeak.get(), slope.get(), ca.get(), thal.get()]]
+    print(row)
+    predictor = Predictor()
+    o = predictor.predict(row)
+    
+    result_window = tk.Toplevel(root)  # Create a new Toplevel window
+    result_window.title("Prediction Result")
+    result_label = tk.Label(result_window, font=("times new roman", 20))
+    
+    if o == 1:
+        print("Person Has Heart Disease")
+        la = "Person Has Heart Disease"
+        result_label.config(text=la, fg="white", bg="maroon", height=2)
+    else:
+        print("Person Is Healthy")
+        la = "Person Is Healthy"
+        result_label.config(text=la, fg="white", bg="green", height=2)
+        
+    result_label.pack()
+    
+    return True
+
+root = tk.Tk()
+root.title("Heart Disease Predictor")
+
+# ... (rest of the code)
+root = tk.Tk()
+root.title("Heart Disease Predictor")
+
+# Labels
+tk.Label(root, text="Fill your Details", font=("times new roman", 12)).grid(row=0, columnspan=3)
+
+# Age
+tk.Label(root, text="Age", padx=20, font=("times new roman", 12)).grid(row=1, column=0)
+age = tk.IntVar()
+tk.Entry(root, textvariable=age).grid(row=1, column=1)
+
+# Gender
+tk.Label(root, text="Sex", padx=20, font=("times new roman", 12)).grid(row=2, column=0)
+gender = tk.IntVar()
+tk.Radiobutton(root, text="Male (1)", padx=20, variable=gender, value=1).grid(row=2, column=1)
+tk.Radiobutton(root, text="Female (0)", padx=20, variable=gender, value=0).grid(row=2, column=2)
+
+# Chest pain type
+tk.Label(root, text="cp: chest pain type (0-3)", font=("times new roman", 12)).grid(row=3, column=0)
+cp = tk.IntVar()
+tk.Entry(root, textvariable=cp).grid(row=3, column=1)
+
+# Rest of the GUI elements (Blood pressure, cholesterol, etc.)
+# ... Continue adding labels, entry fields, radio buttons, etc.
+tk.Label(root, text="trestbps: resting blood pressure", font=("times new roman", 12)).grid(row=4, column=0)
+tbps = tk.IntVar()
+tk.Entry(root, textvariable=tbps).grid(row=4, column=1)
+
+# Serum cholesterol
+tk.Label(root, text="chol: serum cholestoral in mg/dl", font=("times new roman", 12)).grid(row=5, column=0)
+chol = tk.IntVar()
+tk.Entry(root, textvariable=chol).grid(row=5, column=1)
+
+# Fasting blood sugar
+tk.Label(root, text="fbs: (fasting blood sugar > 120 mg/dl)", padx=20, font=("times new roman", 12)).grid(row=6, column=0)
+fbs = tk.IntVar()
+tk.Radiobutton(root, text="True (1)", padx=20, variable=fbs, value=1).grid(row=6, column=1)
+tk.Radiobutton(root, text="False (0)", padx=20, variable=fbs, value=0).grid(row=6, column=2)
+# Resting heart rate (thalach)
+tk.Label(root, text="thalach: resting heart rate", font=("times new roman", 12)).grid(row=8, column=0)
+thalach = tk.IntVar()
+tk.Entry(root, textvariable=thalach).grid(row=8, column=1)
+
+
+# Resting electrocardiographic results
+tk.Label(root, text="restecg: resting electrocardiographic results", padx=20, font=("times new roman", 12)).grid(row=7, column=0)
+restecg = tk.IntVar()
+tk.Radiobutton(root, text="0", padx=20, variable=restecg, value=0).grid(row=7, column=1)
+tk.Radiobutton(root, text="1", padx=20, variable=restecg, value=1).grid(row=7, column=2)
+tk.Radiobutton(root, text="2", padx=20, variable=restecg, value=2).grid(row=7, column=3)
+
+# Exercise induced angina
+tk.Label(root, text="exang: exercise induced angina", padx=20, font=("times new roman", 12)).grid(row=8, column=0)
+exang = tk.IntVar()
+tk.Radiobutton(root, text="Yes (1)", padx=20, variable=exang, value=1).grid(row=8, column=1)
+tk.Radiobutton(root, text="No (0)", padx=20, variable=exang, value=0).grid(row=8, column=2)
+
+# Oldpeak
+tk.Label(root, text="oldpeak: ST depression induced by exercise relative to rest", padx=20, font=("times new roman", 12)).grid(row=9, column=0)
+oldpeak = tk.DoubleVar()
+tk.Entry(root, textvariable=oldpeak).grid(row=9, column=1)
+
+# Slope of the peak exercise ST segment
+tk.Label(root, text="slope: slope of the peak exercise ST segment", padx=20, font=("times new roman", 12)).grid(row=10, column=0)
+slope = tk.IntVar()
+tk.Entry(root, textvariable=slope).grid(row=10, column=1)
+
+# Number of major vessels (0-3) colored by fluoroscopy
+tk.Label(root, text="ca: number of major vessels (0-3) colored by fluoroscopy", padx=20, font=("times new roman", 12)).grid(row=11, column=0)
+ca = tk.IntVar()
+tk.Entry(root, textvariable=ca).grid(row=11, column=1)
+
+# Thal
+tk.Label(root, text="thal: 0 = normal; 1 = fixed defect; 2 = reversable defect", padx=20, font=("times new roman", 12)).grid(row=12, column=0)
+thal = tk.IntVar()
+tk.Entry(root, textvariable=thal).grid(row=12, column=1)
+
+# Predict button
+tk.Button(root, text="Predict", command=onClick).grid(row=14, column=2, sticky=tk.W, pady=4)
+
+root.mainloop()
